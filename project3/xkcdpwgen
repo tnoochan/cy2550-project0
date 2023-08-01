@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import sys
+import random
+
+def load_list():
+    with open('words.txt') as file:
+        output = list(file.read().split())
+    return output
+
+def generate(numWords, numCaps, numNums, numSym):
+    output = random.choices(wordPool, k = numWords)
+    for i in range(min(numCaps, numWords)):
+        output[i] = output[i].capitalize()
+    random.shuffle(output)
+    for i in range(0, numNums):
+        x = random.randrange(10)
+        y = random.randrange(numWords)
+        output[y] = str(x) + output[y] if random.randrange(2) == 0 else output[y] + str(x)
+    random.shuffle(output)
+    for i in range(0, numSym):
+        x = random.randrange(12)
+        y = random.randrange(numWords)
+        output[y] = symbolPool[x] + output[y] if random.randrange(2) == 0 else output[y] + symbolPool[x]
+    random.shuffle(output)
+    return "".join(output)
+
+def helpMessage():
+    return '''usage: xkcdpwgen [-h] [-w WORDS] [-c CAPS] [-n NUMBERS] [-s SYMBOLS]   
+Generate a secure, memorable password using the XKCD method
+optional arguments:
+    -h, --help            show this help message and exit
+    -w WORDS, --words WORDS
+                          include WORDS words in the password (default=4)
+    -c CAPS, --caps CAPS  capitalize the first letter of CAPS random words
+                          (default=0)
+    -n NUMBERS, --numbers NUMBERS
+                          insert NUMBERS random numbers in the password
+                          (default=0)
+    -s SYMBOLS, --symbols SYMBOLS
+                          insert SYMBOLS random symbols in the password
+                          (default=0))'''
+
+
+wordPool = load_list()
+symbolPool = ["~","!","@","#","$","%","^","&","*",".",":",";"] #12 total
+words = 4
+caps = numbers = symbols = 0
+help = True if ("-h" in sys.argv or "--help" in sys.argv) else False
+args = [i for i in sys.argv if i != "-h" and i != "--help"]
+
+try:
+    for i in range(1, len(args), 2):
+        if (args[i] == "-w" or args[i] == "--words"):
+            words = int(args[i+1])
+        elif (args[i] == "-c" or args[i] == "--caps"):
+            caps = int(args[i+1])
+        elif (args[i] == "-n" or args[i] == "--numbers"):
+            numbers = int(args[i+1])
+        elif (args[i] == "-s" or args[i] == "--symbols"):
+            symbols = int(args[i+1])
+        else:
+            raise RuntimeError
+    if (help):
+        sys.stdout.write(helpMessage())
+    sys.stdout.write(generate(words, caps, numbers, symbols))
+except:
+    sys.stdout.write("Error in arguments. See -h")
